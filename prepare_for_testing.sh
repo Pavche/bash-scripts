@@ -82,7 +82,10 @@ export TEST_DIR="/mnt/tests/\$COMPONENT"
 # Debug logs
 export DEBUG_LOG=\$HOME/"\$COMPONENT"_debug.log
 
+export TERM=xterm-256color
+
 cd "\$TEST_DIR"
+
 EOF
     ) >> $B_PROFILE
 
@@ -96,6 +99,12 @@ if [ $EUID -eq 0 ]; then
 
 # Enable big terminal fonts when GUI is unavailable. Makes it easier to work.
 setfont /usr/lib/kbd/consolefonts/ter-u22b.psf.gz
+
+# terminate session for user test.
+# Stop GNOME display manager.
+# pkill -u test
+# sleep 3
+# systemctl stop gdm
 
 # Start testing of Linux GUI.
 echo
@@ -135,7 +144,7 @@ function x11vnc-loop () {
 alias terminate='sudo killall'
 alias show-features='grep -R "^ *@" * | grep -i ".feature"'
 alias sniff='/usr/bin/python /usr/bin/sniff'
-alias behave-no-capture='behave --no-capture --no-capture-stderr --no-logcapture'
+alias behave-no-capture='behave-3 --no-capture --no-capture-stderr --no-logcapture'
 
 # Track the state of network links, connections, and IPv4/IPv6 addresses
 alias watchdev='watch -d nmcli dev status'
@@ -163,23 +172,32 @@ EOF
 
 
 function install_automation_tools() {
-  local TOOL_LIST='mc usbutils sysstat yum-utils konsole'
-  local TOOL_LIST2='ipython python2-pip wireless-tools dconf-editor tigervnc-server shutter'
+  local TOOL_LIST='vim mc usbutils sysstat gnome-system-monitor yum-utils konsole kexec-tools'
+  local TOOL_LIST2='wireless-tools dconf-editor tigervnc-server shutter screen x11vnc'
+  local PYTHON_MODULES='ipython ipdb'
   local EPEL7_REPO='https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm'
   # sysstat : Collection of performance monitoring tools
   printf "Install tools: %s\n" "$TOOL_LIST"
   yum install --enablerepo=epel -y -q $TOOL_LIST
   if rpm --quiet -q $TOOL_LIST; then
     echo "Completed."
-    sleep 2
   else
     echo "Failed."
   fi
-
+  sleep 2
+      
+  printf "Install Python3 modules: %s\n" "$PYTHON_MODULES"
+  if pip3 install "$PYTHON_MODULES"; then
+    echo "Completed."
+  else
+    echo "Failed."
+  fi
+  sleep 2
+  
   echo "Install bug reporing tool..."
   yum install -y -q libreport-rhel-bugzilla
   echo "Completed."
-
+  sleep 2
 
   echo
   unset ANSWER
@@ -271,21 +289,6 @@ function install_devel_tools() {
 }
 
 
-function deploy_brew () {
-    # Install needed tools that enable the downloading of the newest packages from Brew server.
-    # If URL with Koji package is provided as parameter, use it.
-    # Otherwise install the default one.
-    # For information about connecting to Brew, see:  rpm -qi brewkoji
-    local BREWKOJI_URL=${1:-'http://download-node-02.eng.bos.redhat.com/brewroot/packages/brewkoji/1.19/1.el7/noarch/brewkoji-1.19-1.el7.noarch.rpm'}
-    local RC=0  # no problems
-
-    if ! rpm -q --quiet brewkoji; then
-        yum install -y -q --enablerepo=epel $BREWKOJI_URL; RC=$?
-    fi
-    return $RC
-}
-
-
 function create_shortcuts() {
   # Make shortcut to test scenarios on the desktop of the current user in GNOME 3.
   [ -d "$TEST_DIR" ] && ln -s $TEST_DIR/features ~/Desktop/features
@@ -307,6 +310,34 @@ function create_shortcuts() {
     ln -s "$(which $cmd)" "$HOME/Desktop/$cmd"
     sleep 1
   done
+}
+
+
+function download_project() {
+    local PROJECT=${1:?"Error. Provide project name."}
+    local URL=${2:?"Error. Provide URL of a Git repository."}
+    # Clone a project from Git repo into the current directory.
+    if ! rpm --quiet -q git; then
+        echo 'Cannot clone any Git repo. Install prerequisite "git".' >&2
+        return 1
+    fi
+
+    pushd /mnt/tests
+    git clone "$URL"; RC=$?
+    [ $RC -eq 0 ] || return $RC
+    
+    if [ $PROJECT == $COMPONENT ]; then
+        pushd "$COMPONENT"
+        git submodule update --init --recursive; RC=$?
+        if [ $RC -ne 0 ]; then
+            echo 'Failed to initialize submodules.' >&2
+            popd  # $COMPONENT
+            popd  # /mnt/tests
+            return $RC
+        fi
+        popd
+    fi
+    popd  # /mnt/tests
 }
 
 
@@ -348,14 +379,11 @@ if [ $EUID -eq 0 ]; then
     # In order to use Brew server you needed CA certificates.
     source ~/bin/get-CA-cert.sh
 
-    install_automation_tools
+    if uname -r | grep -q el7; then
+        # Install packages from EPEL7 repository.
+        install_automation_tools
+    fi
     sleep 2
-
-    echo "Install a tool for downloading the newest packages from Brew server."
-    deploy_brew
-    [ $? -eq 0 ] && echo "Success" || echo "Failed to install brewkoji." >&2
-    sleep 2
-
     set_user_preferences
 fi  # when logged as root
 
@@ -395,8 +423,9 @@ if [ $EUID -eq 1000 ]; then
     dbus-launch gsettings set org.gnome.desktop.session idle-delay 0
 
     set_user_preferences
+    download_project $COMPONENT https://gitlab.cee.redhat.com/desktopqe/$COMPONENT.git
 fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 7/11/2018
+# Last update: 10/26/2018

@@ -38,14 +38,10 @@ function copy_test_scripts() {
     scp ~/Work/bash-prep/*testing*.sh \
     ~/Work/bash-prep/ask-linux.sh \
     ~/Work/bash-prep/get-CA*.sh \
-    ~/Work/bash-prep/modem-firmware-upgrade*.sh \
     ~/Work/bash-prep/install-automation.sh \
-    ~/Work/bash-prep/test-ModemManager.sh \
     ~/Work/bash-prep/rotest.sh \
     ~/Work/bash-prep/cyclo_test.sh \
-    ~/Work/bash-prep/git-prompt.sh \
-    ~/Work/bash-prep/git-completion.sh \
-    ~/Work/bash-prep/*ykush*.sh \
+    ~/Work/bash-prep/rhel8-deps.sh \
     $u@$TEST_PC:bin
   done
 }
@@ -151,4 +147,4 @@ if [ ! -d $HOME/Pictures/Screenshots ]; then
 fi
 
 # Author: Pavlin Georgiev
-# Last update: 16 May 2018
+# Last update: 16 Oct 2018
