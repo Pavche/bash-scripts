@@ -37,11 +37,13 @@ function copy_test_scripts() {
     ssh -o StrictHostKeyChecking=no $u@$TEST_PC "mkdir bin" < /dev/null
     scp ~/Work/bash-prep/*testing*.sh \
     ~/Work/bash-prep/ask-linux.sh \
+    ~/Work/bash-prep/test-ModemManager*.sh \
     ~/Work/bash-prep/get-CA*.sh \
     ~/Work/bash-prep/install-automation.sh \
     ~/Work/bash-prep/rotest.sh \
     ~/Work/bash-prep/cyclo_test.sh \
-    ~/Work/bash-prep/rhel8-deps.sh \
+    ~/Work/bash-prep/install-nvidia.sh \
+    ~/Work/bash-prep/test-mutter.sh \
     $u@$TEST_PC:bin
   done
 }
@@ -147,4 +149,4 @@ if [ ! -d $HOME/Pictures/Screenshots ]; then
 fi
 
 # Author: Pavlin Georgiev
-# Last update: 16 Oct 2018
+# Last update: 22 Nov 2018
