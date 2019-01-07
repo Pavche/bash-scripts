@@ -251,7 +251,7 @@ HOST_NAME=$(hostname --short)
 CPU_ARCH=$(uname -p)
 DIAG_DIR='/tmp'
 DIAG_FILE="$DIAG_DIR/diag_$CPU_ARCH_$HOST_NAME.txt"
-DESTINATION='pgeorgie@delphinius.usersys.redhat.com:Downloads'
+DESTINATION='pgeorgie@dolphin.usersys.redhat.com:Downloads'
 
 # Remove any previous diagnostic file.
 [[ -f "$DIAG_FILE" ]] && sudo rm -f "$DIAG_FILE"
