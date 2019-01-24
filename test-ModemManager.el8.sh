@@ -85,6 +85,7 @@ function collect_logs () {
 
   # Get the version of installed packages needed to test ModemManager.
   echo "Info about required packages:" > "packages-info.log"
+  rpm -q kernel >> "packages-info.log"
   rpm -q $REQUIRED_PACKAGES >> "packages-info.log"
   # Do not put quotes arround the variable above, otherwise won't work.
   
@@ -210,4 +211,4 @@ mmcli -G INFO
 
 # Author: Pavlin Georgiev
 # Created on: 29 Sep 2017
-# Last update: 18 Dec 2018
+# Last update: 24 Jan 2019
