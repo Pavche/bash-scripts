@@ -72,9 +72,12 @@ function collect_logs () {
   # Get info about USB devices.
   lsusb > "lsusb.log"
   
-  # Get info about the 1st connected modem.
-  mmcli -m 0 > "mmcli.log" 2>&1
+  echo "Get info about the 1st connected modem."  >> "mmcli.log" 2>&1
+  mmcli --modem 0 >> "mmcli.log" 2>&1
   
+  echo "Get information about the 1st SIM card." >> "mmcli.log" 2>&1
+  mmcli --sim 0  >> "mmcli.log" 2>&1
+
   # Get info about GSM network devices from NetworkManager.
   echo "GSM network devices in NetworkManager:" > "nmcli-dev-gsm.log"
   nmcli dev | grep -w gsm >> "nmcli-dev-gsm.log"
@@ -89,6 +92,9 @@ function collect_logs () {
   rpm -q $REQUIRED_PACKAGES >> "packages-info.log"
   # Do not put quotes arround the variable above, otherwise won't work.
   
+  echo -e "\nList of packages in YUM form" >> "packages-info.log"
+  yum list installed $REQUIRED_PACKAGES >> "packages-info.log"
+  # Do not put quotes arround the variable above, otherwise won't work.
   popd
 }
 
@@ -211,4 +217,4 @@ mmcli -G INFO
 
 # Author: Pavlin Georgiev
 # Created on: 29 Sep 2017
-# Last update: 24 Jan 2019
+# Last update: 22 Feb 2019
