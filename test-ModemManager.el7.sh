@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-# Test ModemManager and usb_modeswitch on a remote system.
-# The goal is to monitor the behavior of a mobile broadband modem
-# attached to the system via a USB port.
-# Tested under RHEL 7.6.
+# Test a broadband modem and ModemManager.
+# The goal is to monitor the behavior of the modem
+# attached to the system via USB port, mini PCI-e, or M.2 interface.
+# Tested under RHEL 8.0 Beta.
+
+export LOG_DEST=${1:?"Error. Please, specify log destination. Local or remote: user@remote_host.com:test_dir/."}
 
 export REQUIRED_PACKAGES='ModemManager
 usb_modeswitch
@@ -12,7 +14,6 @@ NetworkManager
 NetworkManager-wwan
 NetworkManager-ppp
 usbutils'
-export LOG_DEST=${1:?"Error. Please, specify log destination. Local or remote: user@remote_host.com:test_dir/."}
 
 
 # User defined functions.
@@ -72,9 +73,12 @@ function collect_logs () {
   # Get info about USB devices.
   lsusb > "lsusb.log"
   
-  # Get info about the 1st connected modem.
-  mmcli -m 0 > "mmcli.log" 2>&1
+  echo "Get info about the 1st connected modem."  >> "mmcli.log" 2>&1
+  mmcli --modem 0 >> "mmcli.log" 2>&1
   
+  echo "Get information about the 1st SIM card." >> "mmcli.log" 2>&1
+  mmcli --sim 0  >> "mmcli.log" 2>&1
+
   # Get info about GSM network devices from NetworkManager.
   echo "GSM network devices in NetworkManager:" > "nmcli-dev-gsm.log"
   nmcli dev | grep -w gsm >> "nmcli-dev-gsm.log"
@@ -89,6 +93,9 @@ function collect_logs () {
   rpm -q $REQUIRED_PACKAGES >> "packages-info.log"
   # Do not put quotes arround the variable above, otherwise won't work.
   
+  echo -e "\nList of packages in YUM form" >> "packages-info.log"
+  yum list installed $REQUIRED_PACKAGES >> "packages-info.log"
+  # Do not put quotes arround the variable above, otherwise won't work.
   popd
 }
 
@@ -211,4 +218,4 @@ mmcli -G INFO
 
 # Author: Pavlin Georgiev
 # Created on: 29 Sep 2017
-# Last update: 18 Dec 2018
+# Last update: 28 Feb 2019

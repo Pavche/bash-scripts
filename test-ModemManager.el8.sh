@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-# Test ModemManager and usb_modeswitch on a remote system.
-# The goal is to monitor the behavior of a mobile broadband modem
-# attached to the system via a USB port.
+# Test a broadband modem and ModemManager.
+# The goal is to monitor the behavior of the modem
+# attached to the system via USB port, mini PCI-e, or M.2 interface.
 # Tested under RHEL 8.0 Beta.
+
+export LOG_DEST=${1:?"Error. Please, specify log destination. Local or remote: user@remote_host.com:test_dir/."}
 
 export REQUIRED_PACKAGES='ModemManager
 usb_modeswitch
@@ -12,7 +14,6 @@ NetworkManager
 NetworkManager-wwan
 NetworkManager-ppp
 usbutils'
-export LOG_DEST=${1:?"Error. Please, specify log destination. Local or remote: user@remote_host.com:test_dir/."}
 
 
 # User defined functions.
@@ -217,4 +218,4 @@ mmcli -G INFO
 
 # Author: Pavlin Georgiev
 # Created on: 29 Sep 2017
-# Last update: 22 Feb 2019
+# Last update: 28 Feb 2019
