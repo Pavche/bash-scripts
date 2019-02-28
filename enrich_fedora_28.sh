@@ -57,31 +57,23 @@
 #    Text-based Internet
 #    Window Managers
 
+echo "Install groups"
+echo "  Fedora Workstation"
+echo "  Development Tools"
+echo "  Security Tools"
+echo "  Administration Tools"
+echo "  System Management"
+echo "  System Administration Tools"
+echo "  C Development Tools and Libraries"
+echo "  Books and Guides"
+echo "  Development Tools"
+echo "  Editors"
+echo "  System Tools"
+sleep 3
 
 
-echo "yum groups install -y \\
-\"Fedora Workstation\" \\
-\"Development and Creative Workstation\""
-sleep 2
-
-yum groups install -y \
+for GRP in \
 "Fedora Workstation" \
-"Development and Creative Workstation"
-
-echo "yum groups install -y \\
-\"Development Tools\" \\
-\"Security Tools\" \\
-\"Administration Tools\" \\
-\"System Management\" \\
-\"System Administration Tools\" \\
-\"C Development Tools and Libraries\" \\
-\"Books and Guides\" \\
-\"Development Tools\" \\
-\"Editors\" \\
-\"System Tools\""
-sleep 2
-
-yum groups install -y \
 "Development Tools" \
 "Security Tools" \
 "Administration Tools" \
@@ -92,7 +84,9 @@ yum groups install -y \
 "Development Tools" \
 "Editors" \
 "System Tools"
+do
+  yum groups install -y "$GRP"
+  sleep 3
+done
 
-yum groups list installed | less
-
-# Last update: 2/5/2019
+# Last update: 2/8/2019
