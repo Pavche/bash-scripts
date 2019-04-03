@@ -209,13 +209,16 @@ fi
 collect_logs "$HOME"
 send_logs "$HOME" "$LOG_DEST"
 
-
 # Clean up.
+# Remove logs.
+rm -f "$HOME/*.log"
+
 nmcli connection del test-gsm-connection
+
 # Decrease verbosity of ModemManager.
 mmcli -G INFO
 
 
 # Author: Pavlin Georgiev
 # Created on: 29 Sep 2017
-# Last update: 28 Feb 2019
+# Last update: 3 Apr 2019
