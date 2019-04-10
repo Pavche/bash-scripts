@@ -136,7 +136,7 @@ EOF
 
 function install_automation_tools() {
   local TOOL_LIST='vim-enhanced mc dconf-editor sysstat dnf-utils tigervnc-server'
-  local PYTHON_MODULES='ipython ipdb'
+  local PYTHON_MODULES='ipython ipdb==0.8'
 
   # sysstat : Collection of performance monitoring tools
   echo "Install automation tools:"
@@ -149,26 +149,20 @@ function install_automation_tools() {
   yum install -y -q $TOOL_LIST
   isOK
   sleep 2
-  
-  echo "Update pip for Python2"
-  sleep 2
-  pip2 install --upgrade pip
-  sleep 2
 
-  printf "Install Python2 modules: %s\n" "$PYTHON_MODULES"
+  echo "Install Python2 PIP and Python3 PIP"
+  yum install -y python2-pip python3-pip
+  isOK
   sleep 2
-  pip3 install $PYTHON_MODULES
+  
+  echo "Update pip"
+  python -m pip install --upgrade pip
   isOK
   sleep 2
 
-  echo "Update pip for Python3"
+  printf "Install Python modules: %s\n" "$PYTHON_MODULES"
   sleep 2
-  pip3 install --upgrade pip
-  sleep 2
-
-  printf "Install Python3 modules: %s\n" "$PYTHON_MODULES"
-  sleep 2
-  pip3 install $PYTHON_MODULES
+  python -m pip install $PYTHON_MODULES
   isOK
   sleep 2
 
@@ -291,4 +285,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 1/18/2019
+# Last update: 4/10/2019
