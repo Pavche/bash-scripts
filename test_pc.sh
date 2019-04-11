@@ -82,29 +82,6 @@ copy_test_scripts
 sleep 2
 echo
 
-while [[ $ANSWER != [YyNn] ]]; do
-    read -p "Would you like to add repo file from RHEL latest (Y/N)? " ANSWER
-    case $ANSWER in
-        [Yy])
-        read -p "Full path to repo: " REPO_FILE
-        update-repo "$TEST_PC" "$REPO_FILE"
-        [ $? -eq 0 ] && echo "Completed." || echo "Failed to update repository." >&2
-        echo
-        sleep 2
-        ;;
-        [Nn])
-        echo "Skipping repository definition."
-        echo
-        sleep 2
-        ;;
-        *)
-        echo "Incorrect answer $ANSWER. Should be Y/N."
-        echo
-        sleep 2
-        ;;
-    esac
-done  # while
-
 # Give the remote host a short nickname for easy remote connections.
 # Set the local host name resolution for the new testing machine.
 echo "Give a short name to the testing machine, something easy to remember."
@@ -153,4 +130,4 @@ if [ ! -d $HOME/Pictures/Screenshots ]; then
 fi
 
 # Author: Pavlin Georgiev
-# Last update: 28 Dec 2019
+# Last update: 4/10/2019
