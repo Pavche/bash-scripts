@@ -184,7 +184,6 @@ set +x
 
 if [ -z $GSM_DEV ]; then
   echo "Error: Cannot identify any GSM device in NetworkManager." >&2
-  exit 1
 fi
 
 # Increase the verbosity of ModemManager.
@@ -211,7 +210,7 @@ send_logs "$HOME" "$LOG_DEST"
 
 # Clean up.
 # Remove logs.
-rm -f "$HOME/*.log"
+rm -f $HOME/*.log
 
 nmcli connection del test-gsm-connection
 
@@ -221,4 +220,4 @@ mmcli -G INFO
 
 # Author: Pavlin Georgiev
 # Created on: 29 Sep 2017
-# Last update: 3 Apr 2019
+# Last update: 11 Apr 2019
