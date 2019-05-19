@@ -33,22 +33,23 @@ function clear_ssh_keys() {
 
 
 function copy_test_scripts() {
-  # Copy the scripts for automated testing to root and user test
-  # Use quotes after ssh user@host_name.
-  # Avoid timeouts or add subcommand after ssh: < /dev/null
-  for u in root test; do
-    ssh -o StrictHostKeyChecking=no $u@$TEST_PC "mkdir bin" < /dev/null
+    # Copy the scripts for automated testing to root and user test
+    # Use quotes after ssh user@host_name.
+    # Avoid timeouts or add subcommand after ssh: < /dev/null
+    ssh -o StrictHostKeyChecking=no root@$TEST_PC "mkdir bin" < /dev/null
     scp ~/Work/bash-prep/*testing*.sh \
+    ~/bin/*testing*.sh \
     ~/bin/ask-linux.sh \
-    ~/bin/install-nvidia.sh \
     ~/bin/test-ModemManager*.sh \
-    ~/Work/bash-prep/cyclo_test.sh \
     ~/Work/bash-prep/get-CA*.sh \
     ~/Work/bash-prep/install-automation.sh \
     ~/Work/bash-prep/rotest.sh \
-    ~/Work/bash-prep/test-mutter.sh \
-    $u@$TEST_PC:bin
-  done
+    root@$TEST_PC:bin
+
+    ssh -o StrictHostKeyChecking=no test@$TEST_PC "mkdir bin" < /dev/null
+    scp ~/Work/bash-prep/*testing*.sh \
+    ~/bin/*testing*.sh \
+    test@$TEST_PC:bin
 }
 
 
@@ -130,4 +131,4 @@ if [ ! -d $HOME/Pictures/Screenshots ]; then
 fi
 
 # Author: Pavlin Georgiev
-# Last update: 4/10/2019
+# Last update: 5/19/2019
