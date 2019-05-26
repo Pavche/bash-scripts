@@ -8,11 +8,6 @@
 # The script should be run on the TESTING MACHINE as user "test".
 # 1st command line parameter should be an existing software package in Linux.
 
-# TODO: Does the system have repository from where to take RPM packages?
-# Without repo, this script is semi-functional.
-# How to check? Try to 'yum list' a well know package that must exist but it's not installed by default.
-# The result will show the availability or lack of repo.
-
 # Validation of command-line arguments
 COMPONENT=${1:?"Error. Component's name is missing."}
 
@@ -83,7 +78,7 @@ export TEST_DIR="$TEST_DIR/\$COMPONENT"
 # Debug logs
 export DEBUG_LOG=\$HOME/"\$COMPONENT"_debug.log
 
-export TERM=xterm-256color
+export TERM=xterm
  
 cd "\$TEST_DIR"
 EOF
@@ -115,31 +110,20 @@ function extend_bashrc () {
     # Do not leave leading spaces in the code segment below
     cat << EOF >> $B_RC
 
-# For Python2
-alias behave-no-capture='behave --no-capture --no-capture-stderr --no-logcapture'
-
-# For Python3
-# alias behave-no-capture='behave-3 --no-capture --no-capture-stderr --no-logcapture'
-
 # Track the state of network links, connections, and IPv4/IPv6 addresses
 alias watchdev='watch -d nmcli dev status'
 alias watchlink='watch -d ip -0 a s'
 alias watchcon='watch -d nmcli connection'
 alias watchcona='watch -d nmcli connection show --active'
-alias watchip4='watch -d ip -4 a s'
-alias watchip6='watch -d ip -6 a s'
-alias watchr4='watch -d ip -4 route show'
-alias watchr6='watch -d ip -6 route show'
 
-# Last screenshot and video record
-alias last-screenshot='ls -Art ~/Pictures/*.png | tail -n 1'
+# Last video record
 alias last-video='ls -Art ~/Videos/*.webm | tail -n 1'
 EOF
 }
 
 
 function install_automation_tools() {
-  local TOOL_LIST='vim-enhanced mc dconf-editor sysstat dnf-utils tigervnc-server'
+  local TOOL_LIST='vim-enhanced mc dconf-editor'
 
   # sysstat : Collection of performance monitoring tools
   echo "Install automation tools:"
@@ -151,26 +135,6 @@ function install_automation_tools() {
   sleep 2
   yum install -y -q $TOOL_LIST
   isOK
-  sleep 2
-
-  echo "Install Python3 + Modules"
-  if uname -r | grep -q '.el7'; then
-    # If RHEL7 distro
-    yum install -y python36 python36-pip
-  elif uname -r | grep -q '.el8'; then
-    # If RHEL8 distro
-    yum install -y python3-pip
-  else
-    echo "Error: Unknown distro." >&2
-    return 1
-  fi
-
-  pip3 install ipython ipdb
-  if [ $? -eq 0 ]; then
-    echo "Installation of Python3 modules completed."
-  else
-    echo "Failed to install Python3 modules." >&2
-  fi
   sleep 2
 }
 
@@ -260,7 +224,7 @@ if [ $EUID -eq 0 ]; then
     
     set_user_preferences
     
-    set_kernel_params
+#     set_kernel_params
 fi  # when logged as root
 
 
@@ -300,4 +264,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 5/18/2019
+# Last update: 5/26/2019
