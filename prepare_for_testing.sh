@@ -174,7 +174,8 @@ if [ $EUID -eq 0 ]; then
     # in order to copy files without asking for password,
     # only if it is not already generated.
     if [ ! -f ~/.ssh/id_rsa.pub ]; then
-      ssh-keygen -t RSA -b 2048
+      # Generate a RSA key with length of 2048 bits.
+      ssh-keygen -t rsa -b 2048; RC=$?
       if [ $? -ne 0 ]; then
           echo "Could not generate a SSH key for the root."
           exit 2
@@ -195,9 +196,12 @@ if [ $EUID -eq 0 ]; then
         echo "The directory $TEST_DIR does not exist."
         exit 4
     fi
-
+    
+    echo
     # In order to use Brew server you needed CA certificates.
     source ~/bin/get-CA-cert.sh
+    echo "Security certificates were imported."
+    sleep 2
     echo
     install_tools
     sleep 2
@@ -212,12 +216,11 @@ if [ $EUID -eq 0 ]; then
       echo 'Copy Xorg conf file which contains dummy video driver.'
       cp -fp /mnt/tests/desktop/rhel8/install/10-dummylibvnc.conf /etc/X11/xorg.conf.d
     fi
+
     echo
     set_user_preferences
-    echo
     extend_bash_profile
     echo "bash profile was extended with new variables."
-    echo
     extend_bashrc
     echo "bash rc was extended with new aliases and functions."
 #     set_kernel_params
@@ -230,7 +233,8 @@ if [ $EUID -eq 1000 ]; then
     # in order to copy files without asking for password,
     # only if it is not already generated.
     if [ ! -f ~/.ssh/id_rsa.pub ]; then
-        ssh-keygen -t rsa; RC=$?
+        # Generate a RSA key with length of 2048 bits.
+        ssh-keygen -t rsa -b 2048; RC=$?
         if [ $RC -ne 0 ]; then
             echo "Could not generate a SSH key for user test."
             exit 8
@@ -254,7 +258,6 @@ if [ $EUID -eq 1000 ]; then
     
     echo
     set_user_preferences
-    echo
     extend_bash_profile
     echo "bash profile was extended with new variables."
     extend_bashrc
