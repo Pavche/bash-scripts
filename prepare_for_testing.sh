@@ -119,11 +119,10 @@ EOF
 }
 
 
-function install_automation_tools() {
+function install_tools() {
   local TOOL_LIST='vim-enhanced mc dconf-editor'
 
-  # sysstat : Collection of performance monitoring tools
-  echo "Install automation tools:"
+  echo "Install tools:"
   i=1
   for tool in $TOOL_LIST; do
     echo "$i. $tool"
@@ -199,13 +198,10 @@ if [ $EUID -eq 0 ]; then
         exit 4
     fi
 
-    extend_bash_profile
-    extend_bashrc
-
     # In order to use Brew server you needed CA certificates.
     source ~/bin/get-CA-cert.sh
 
-    install_automation_tools
+    install_tools
     sleep 2
     
     # Prepare specific conditions for remote connection via VNC under RHEL 8.0
@@ -220,7 +216,10 @@ if [ $EUID -eq 0 ]; then
     fi
     
     set_user_preferences
-    
+    extend_bash_profile
+    echo "bash profile was extended with new variables."
+    extend_bashrc
+    echo "bash rc was extended with new aliases and functions."
 #     set_kernel_params
 fi  # when logged as root
 
@@ -245,10 +244,6 @@ if [ $EUID -eq 1000 ]; then
     # Log file is needed only for the user "test" under which automated test are run.
     set_debug_log "$HOME/$COMPONENT/debug.log"
 
-    extend_bash_profile
-
-    extend_bashrc
-
     # Modify GNOME settings outside of GUI.
     # Enable accessibility technology A11Y in GNOME3.
     dbus-launch gsettings set org.gnome.desktop.interface toolkit-accessibility true
@@ -257,6 +252,12 @@ if [ $EUID -eq 1000 ]; then
 
     set_user_preferences
     download_project $COMPONENT https://gitlab.cee.redhat.com/desktopqe/$COMPONENT.git
+
+    extend_bash_profile
+    echo "bash profile was extended with new variables."
+    extend_bashrc
+    echo "bash rc was extended with new aliases and functions."
+
 fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
