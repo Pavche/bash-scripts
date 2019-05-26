@@ -83,9 +83,6 @@ export TERM=xterm
 cd "\$TEST_DIR"
 EOF
 
-  cat "$B_PROFILE"
-  sleep 5
-
   # Needed for root user only.
   if [ $EUID -eq 0 ] && \
   [ ! "$COMPONENT" == "ModemManager" ] && \
