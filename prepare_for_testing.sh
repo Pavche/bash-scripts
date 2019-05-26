@@ -58,7 +58,6 @@ function extend_bash_profile () {
   # the location on my notebook where to store various files from the testing machine
   # the location on my notebook where is the source code for automated tests
   # the location of automated tests on the testing machine
-  echo "Extend bash profile with new functionalities:"
   # Do not insert leading spaces in the code segment below
   cat << EOF >> $B_PROFILE
 # Component name in Linux for testing
@@ -103,7 +102,6 @@ EOF
 
 function extend_bashrc () {
     # Add new commands for tacking the behavor of netork interfaces, connections, and routes.
-    echo "Extend bash profile with new functionalities:"
     # Do not leave leading spaces in the code segment below
     cat << EOF >> $B_RC
 
@@ -200,7 +198,7 @@ if [ $EUID -eq 0 ]; then
 
     # In order to use Brew server you needed CA certificates.
     source ~/bin/get-CA-cert.sh
-
+    echo
     install_tools
     sleep 2
     
@@ -214,10 +212,12 @@ if [ $EUID -eq 0 ]; then
       echo 'Copy Xorg conf file which contains dummy video driver.'
       cp -fp /mnt/tests/desktop/rhel8/install/10-dummylibvnc.conf /etc/X11/xorg.conf.d
     fi
-    
+    echo
     set_user_preferences
+    echo
     extend_bash_profile
     echo "bash profile was extended with new variables."
+    echo
     extend_bashrc
     echo "bash rc was extended with new aliases and functions."
 #     set_kernel_params
@@ -249,10 +249,12 @@ if [ $EUID -eq 1000 ]; then
     dbus-launch gsettings set org.gnome.desktop.interface toolkit-accessibility true
     # Disable power saving
     dbus-launch gsettings set org.gnome.desktop.session idle-delay 0
-
-    set_user_preferences
+    
     download_project $COMPONENT https://gitlab.cee.redhat.com/desktopqe/$COMPONENT.git
-
+    
+    echo
+    set_user_preferences
+    echo
     extend_bash_profile
     echo "bash profile was extended with new variables."
     extend_bashrc
