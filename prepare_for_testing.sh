@@ -174,13 +174,15 @@ if [ $EUID -eq 0 ]; then
     # in order to copy files without asking for password,
     # only if it is not already generated.
     if [ ! -f ~/.ssh/id_rsa.pub ]; then
-      # Generate a RSA key with length of 2048 bits.
-      ssh-keygen -t rsa -b 2048; RC=$?
+      # Generate a RSA key.
+      ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''; RC=$?
       if [ $? -ne 0 ]; then
-          echo "Could not generate a SSH key for the root."
+          echo "Could not generate a SSH key for root."
           exit 2
       else
-          echo "Copy the SSH key of user test to provide passwordless file transfer."
+          echo "SSH key was generated."
+          sleep 2
+          # Copy the SSH key of user test to provide passwordless file transfer.
           ssh-copy-id -o StrictHostKeyChecking=no pgeorgie@dolphin.usersys.redhat.com
       fi
     fi
@@ -233,14 +235,16 @@ if [ $EUID -eq 1000 ]; then
     # in order to copy files without asking for password,
     # only if it is not already generated.
     if [ ! -f ~/.ssh/id_rsa.pub ]; then
-        # Generate a RSA key with length of 2048 bits.
-        ssh-keygen -t rsa -b 2048; RC=$?
+        # Generate a RSA key.
+        ssh-keygen -f ~/.ssh/id_rsa -t rsa -N ''; RC=$?
         if [ $RC -ne 0 ]; then
-            echo "Could not generate a SSH key for user test."
+            echo "Could not generate a SSH key for user $(whoami)."
             exit 8
         else
-            echo "Copy the SSH key of user test to provide passwordless file transfer."
-            ssh-copy-id -o StrictHostKeyChecking=no pgeorgie@dolphin.usersys.redhat.com
+          echo "SSH key was generated."
+          sleep 2
+          # Copy the SSH key of user test to provide passwordless file transfer.
+          ssh-copy-id -o StrictHostKeyChecking=no pgeorgie@dolphin.usersys.redhat.com
         fi
 
     fi
@@ -267,4 +271,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 5/26/2019
+# Last update: 5/27/2019
