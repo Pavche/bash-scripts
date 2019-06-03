@@ -24,7 +24,48 @@ function isOK () {
   fi
 }
 
-function set_gnome_terminal () {
+function set_gnome_terminal_rhel8 () {
+  # This funtion can be run in a GNOME session only.
+  # Modify colors and fonts in gnome-terminal.
+  # Example:
+  # [org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
+  # background-color='rgb(255,255,221)'
+  # login-shell=true
+  # use-theme-colors=false
+  # foreground-color='rgb(0,0,0)'
+  # use-system-font=false
+  # font='Monospace 14'
+
+  # How get the current profile of gnome-terminal?
+  local TERM_PROFILE=$(dconf dump / | grep -w org/gnome/terminal/legacy/profiles | awk 'NR>1{print $1}' RS='[' FS=']')
+  local DCONF_DIR="/$TERM_PROFILE"
+
+  # Extract the contents of terminal progile.
+  dbus-launch dconf dump $DCONF_DIR/ > ~/dconf_dump.bak
+
+  echo "Modify the gnome-terminal profile."
+
+  # Usage:
+  #   dconf write KEY VALUE
+  #
+  # Write a new value to a key
+  #
+  # Arguments:
+  #   KEY         A key path (starting, but not ending with '/')
+  #   VALUE       The value to write (in GVariant format)
+  # The value needs additional quoting i.e. to assign GVariant string value 'foo' you need to write the value argument as "'foo'"
+
+  dbus-launch dconf write $DCONF_DIR/background-color "'rgb(255,255,221)'"
+  dbus-launch dconf write $DCONF_DIR/login-shell true
+  dbus-launch dconf write $DCONF_DIR/use-theme-colors false
+  dbus-launch dconf write $DCONF_DIR/foreground-color "'rgb(0,0,0)'"
+  dbus-launch dconf write $DCONF_DIR/use-system-font false
+  dbus-launch dconf write $DCONF_DIR/font "'Monospace 14'"
+  echo "The profile was modified."
+}
+
+function set_gnome_terminal_rhel7 () {
+  # This funtion can be run in a GNOME session only.
   # Modify colors and fonts in gnome-terminal.
   # Example:
   #  [org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
@@ -59,9 +100,7 @@ function set_gnome_terminal () {
   dbus-launch dconf write $DCONF_DIR/use-theme-colors false
   dbus-launch dconf write $DCONF_DIR/foreground-color "'rgb(0,0,0)'"
   dbus-launch dconf write $DCONF_DIR/use-system-font false
-  dbus-launch dconf write $DCONF_DIR/font "'Monospace 14'"
-  # dbus-lauch allows modification outside of GUI session.
-
+  dbus-launch dconf write $DCONF_DIR/font "'Terminus Bold 14'"
   echo "The profile was modified."
 }
 
@@ -82,7 +121,6 @@ EOF
     gsettings set org.gnome.desktop.background secondary-color '#fad166'
 }
 
-
 function set_debug_log () {
   # Create an empty debug log for given GUI component under test.
   local DEBUG_LOG=${1:?"Error, please provide full path to debug log."}
@@ -95,7 +133,6 @@ function set_debug_log () {
   # Is the operation successful? Can a program write to that log?
   [ -w "$DEBUG_LOG" ] && return 0 || return 1
 }
-
 
 function extend_bash_profile () {
   # Define variables that describe:
@@ -145,7 +182,6 @@ EOF
   fi
 }
 
-
 function extend_bashrc () {
     # Add new commands for tacking the behavor of netork interfaces, connections, and routes.
     # Do not leave leading spaces in the code segment below
@@ -162,7 +198,6 @@ alias last-video='ls -Art ~/Videos/*.webm | tail -n 1'
 EOF
 }
 
-
 function install_tools() {
   local TOOL_LIST='vim-enhanced mc dconf-editor'
 
@@ -177,7 +212,6 @@ function install_tools() {
   isOK
   sleep 2
 }
-
 
 function download_project() {
     local PROJECT=${1:?"Error. Provide project name."}
@@ -206,13 +240,11 @@ function download_project() {
     popd  # /mnt/tests
 }
 
-
 function set_kernel_params () {
     echo 'Disable consistent network device naming and BIOS names.'
     grubby --update-kernel=ALL --args="biosdevname=0 net.ifnames=0"
     echo 'Takes effect after reboot.'
 }
-
 
 # Is the script is run as root?
 if [ $EUID -eq 0 ]; then
@@ -274,7 +306,6 @@ if [ $EUID -eq 0 ]; then
     set_kernel_params
 fi  # when logged as root
 
-
 # Is the sript run as normal user, for example "test"?
 if [ $EUID -eq 1000 ]; then
     # Generate a SSH key and copy it to my notebook
@@ -308,7 +339,13 @@ if [ $EUID -eq 1000 ]; then
     
     echo
     set_user_preferences
-    set_gnome_terminal
+    if uname -r | grep -w el7; then
+      set_gnome_terminal_rhel7
+    elif uname -r | grep -w el8; then
+      set_gnome_terminal_rhel8
+    else
+      set_gnome_terminal_rhel7
+    fi
     extend_bash_profile
     echo "bash profile was extended with new variables."
     extend_bashrc
