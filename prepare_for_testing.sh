@@ -34,6 +34,12 @@ function set_user_preferences () {
 set nosmartindent
 EOF
     ) >  ~/.vimrc
+    
+    # Set up light color for background before testing.
+    gsettings set org.gnome.desktop.background picture-uri 'file:////usr/share/gnome-control-center/pixmaps/noise-texture-light.png'
+    gsettings set org.gnome.desktop.background primary-color '#fad166'
+    gsettings set org.gnome.desktop.background picture-options 'wallpaper'
+    gsettings set org.gnome.desktop.background secondary-color '#fad166'
 }
 
 
@@ -182,10 +188,10 @@ if [ $EUID -eq 0 ]; then
       else
           echo "SSH key was generated."
           sleep 2
-          # Copy the SSH key of user test to provide passwordless file transfer.
-          ssh-copy-id -o StrictHostKeyChecking=no pgeorgie@dolphin.usersys.redhat.com
       fi
     fi
+    # Copy the SSH key of user test to provide passwordless file transfer.
+    ssh-copy-id -o StrictHostKeyChecking=no pgeorgie@dolphin.usersys.redhat.com
 
     groupadd --gid 10001 testers
     usermod -aG testers test
@@ -225,7 +231,7 @@ if [ $EUID -eq 0 ]; then
     echo "bash profile was extended with new variables."
     extend_bashrc
     echo "bash rc was extended with new aliases and functions."
-#     set_kernel_params
+    set_kernel_params
 fi  # when logged as root
 
 
@@ -271,4 +277,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 5/27/2019
+# Last update: 6/3/2019
