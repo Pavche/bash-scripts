@@ -24,6 +24,46 @@ function isOK () {
   fi
 }
 
+function set_gnome_terminal () {
+  # Modify colors and fonts in gnome-terminal.
+  # Example:
+  #  [org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
+  #  background-color='rgb(255,255,221)'
+  #  login-shell=true
+  #  use-theme-colors=false
+  #  foreground-color='rgb(0,0,0)'
+  #  use-system-font=false
+  #  font='Terminus Bold 14'
+
+  # How get the current profile of gnome-terminal?
+  local TERM_PROFILE=$(dconf dump / | grep -w org/gnome/terminal/legacy/profiles | awk 'NR>1{print $1}' RS='[' FS=']')
+  local DCONF_DIR="/$TERM_PROFILE"
+
+  # Extract the contents of terminal progile.
+  dconf dump $DCONF_DIR/ > ~/dconf_dump.bak
+
+  echo "Modify the gnome-terminal profile."
+
+  # Usage:
+  #   dconf write KEY VALUE
+  #
+  # Write a new value to a key
+  #
+  # Arguments:
+  #   KEY         A key path (starting, but not ending with '/')
+  #   VALUE       The value to write (in GVariant format)
+  # The value needs additional quoting i.e. to assign GVariant string value 'foo' you need to write the value argument as "'foo'"
+
+  dbus-launch dconf write $DCONF_DIR/background-color "'rgb(255,255,221)'"
+  dbus-launch dconf write $DCONF_DIR/login-shell true
+  dbus-launch dconf write $DCONF_DIR/use-theme-colors false
+  dbus-launch dconf write $DCONF_DIR/foreground-color "'rgb(0,0,0)'"
+  dbus-launch dconf write $DCONF_DIR/use-system-font false
+  dbus-launch dconf write $DCONF_DIR/font "'Monospace 14'"
+  # dbus-lauch allows modification outside of GUI session.
+
+  echo "The profile was modified."
+}
 
 function set_user_preferences () {
     # Define how some useful tools will work during software testing and Linux administraion.
@@ -268,6 +308,7 @@ if [ $EUID -eq 1000 ]; then
     
     echo
     set_user_preferences
+    set_gnome_terminal
     extend_bash_profile
     echo "bash profile was extended with new variables."
     extend_bashrc
