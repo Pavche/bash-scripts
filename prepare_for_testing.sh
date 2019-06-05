@@ -25,42 +25,66 @@ function isOK () {
 }
 
 function set_gnome_terminal_rhel8 () {
+  # Modify fonts, colors. 'Run command as a login shell'=True, General.'Theme Variant='Light'
+  # Disable menu accelerator F10.
+  # This function works for a single terminal profile.
   # This funtion can be run in a GNOME session only.
-  # Modify colors and fonts in gnome-terminal.
-  # Example:
-  # [org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
-  # background-color='rgb(255,255,221)'
-  # login-shell=true
-  # use-theme-colors=false
-  # foreground-color='rgb(0,0,0)'
-  # use-system-font=false
-  # font='Monospace 14'
 
-  # How get the current profile of gnome-terminal?
-  local TERM_PROFILE=$(dconf dump / | grep -w org/gnome/terminal/legacy/profiles | awk 'NR>1{print $1}' RS='[' FS=']')
-  local DCONF_DIR="/$TERM_PROFILE"
+  # Get the black terminal
+  #  dconf dump / > dconf_dark_terminal
+  #  gsettings list-recursively > gsettings_dark_terminal
+
+  # Modify all colors to brigth + bigger letters + shell execution
+  #  dconf dump / > dconf_light_terminal
+  #  gsettings list-recursively > gsettings_light_terminal
+
+  # COMPARE both terminals
+  #  diff dconf_dark_terminal dconf_light_terminal
+  # Copy and paste those differencies.
+  #16c16,21
+  #< use-theme-colors=true
+  #16c16
+  #---
+  #> background-color='rgb(255,255,221)'
+  #> login-shell=true
+  #> use-theme-colors=false
+  #> foreground-color='rgb(0,0,0)'
+  #> use-system-font=false
+  #> font='Monospace Bold 14'
+  #19a25
+  #> theme-variant='light'
+
+  #  diff gsettings_dark_terminal gsettings_light_terminal
+  # Copy and paste those differencies.
+  #  168c168
+  #  < org.gnome.Terminal.Legacy.Settings theme-variant 'dark'
+  #  ---
+  #  > org.gnome.Terminal.Legacy.Settings theme-variant 'light'
+
+  # What is tne name of Terminal profile?
+  # [org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
+
+  # How to find GNOME terminal profiles? How to match them?
+  local PROFILE=$(dconf dump / | grep -w gnome | grep -w terminal | grep -w profiles -m1 | awk 'NR>1{print $1}' RS='[' FS=']')
+  local DCONF_DIR="/$PROFILE"
 
   # Extract the contents of terminal progile.
-  dbus-launch dconf dump $DCONF_DIR/ > ~/dconf_dump.bak
+  dconf dump $DCONF_DIR/ > ~/dconf_dump.bak
 
   echo "Modify the gnome-terminal profile."
+  dconf write $DCONF_DIR/use-theme-colors false
+  dconf write $DCONF_DIR/background-color "'rgb(255,255,221)'"
+  dconf write $DCONF_DIR/foreground-color "'rgb(0,0,0)'"
+  dconf write $DCONF_DIR/use-system-font false
+  dconf write $DCONF_DIR/font "'Monospace Bold 14'"
+  dconf write $DCONF_DIR/theme-variant "'light'"
+  dconf write $DCONF_DIR/menu-accelerator-enabled false
+  dconf write $DCONF_DIR/login-shell true
 
-  # Usage:
-  #   dconf write KEY VALUE
-  #
-  # Write a new value to a key
-  #
-  # Arguments:
-  #   KEY         A key path (starting, but not ending with '/')
-  #   VALUE       The value to write (in GVariant format)
-  # The value needs additional quoting i.e. to assign GVariant string value 'foo' you need to write the value argument as "'foo'"
+  local SCHEMA='org.gnome.Terminal.Legacy.Settings'
+  gsettings set $SCHEMA theme-variant 'light'
+  gsettings set $SCHEMA menu-accelerator-enabled false
 
-  dbus-launch dconf write $DCONF_DIR/background-color "'rgb(255,255,221)'"
-  dbus-launch dconf write $DCONF_DIR/login-shell true
-  dbus-launch dconf write $DCONF_DIR/use-theme-colors false
-  dbus-launch dconf write $DCONF_DIR/foreground-color "'rgb(0,0,0)'"
-  dbus-launch dconf write $DCONF_DIR/use-system-font false
-  dbus-launch dconf write $DCONF_DIR/font "'Monospace 14'"
   echo "The profile was modified."
 }
 
@@ -95,12 +119,20 @@ function set_gnome_terminal_rhel7 () {
   #   VALUE       The value to write (in GVariant format)
   # The value needs additional quoting i.e. to assign GVariant string value 'foo' you need to write the value argument as "'foo'"
 
-  dbus-launch dconf write $DCONF_DIR/background-color "'rgb(255,255,221)'"
-  dbus-launch dconf write $DCONF_DIR/login-shell true
-  dbus-launch dconf write $DCONF_DIR/use-theme-colors false
-  dbus-launch dconf write $DCONF_DIR/foreground-color "'rgb(0,0,0)'"
-  dbus-launch dconf write $DCONF_DIR/use-system-font false
-  dbus-launch dconf write $DCONF_DIR/font "'Terminus Bold 14'"
+  echo "Modify the gnome-terminal profile."
+  dconf write $DCONF_DIR/use-theme-colors false
+  dconf write $DCONF_DIR/background-color "'rgb(255,255,221)'"
+  dconf write $DCONF_DIR/foreground-color "'rgb(0,0,0)'"
+  dconf write $DCONF_DIR/use-system-font false
+  dconf write $DCONF_DIR/font "'Terminus Bold 14'"
+  dconf write $DCONF_DIR/theme-variant "'light'"
+  dconf write $DCONF_DIR/menu-accelerator-enabled false
+  dconf write $DCONF_DIR/login-shell true
+
+  local SCHEMA='org.gnome.Terminal.Legacy.Settings'
+  gsettings set $SCHEMA theme-variant 'light'
+  gsettings set $SCHEMA menu-accelerator-enabled false
+
   echo "The profile was modified."
 }
 
