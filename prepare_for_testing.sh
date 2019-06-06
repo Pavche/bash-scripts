@@ -8,6 +8,8 @@
 # The script should be run on the TESTING MACHINE as user "test".
 # 1st command line parameter should be an existing software package in Linux.
 
+# TODO: define repository
+
 # Validation of command-line arguments
 COMPONENT=${1:?"Error. Component's name is missing."}
 
@@ -88,53 +90,6 @@ function set_gnome_terminal_rhel8 () {
   echo "The profile was modified."
 }
 
-function set_gnome_terminal_rhel7 () {
-  # This funtion can be run in a GNOME session only.
-  # Modify colors and fonts in gnome-terminal.
-  # Example:
-  #  [org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
-  #  background-color='rgb(255,255,221)'
-  #  login-shell=true
-  #  use-theme-colors=false
-  #  foreground-color='rgb(0,0,0)'
-  #  use-system-font=false
-  #  font='Terminus Bold 14'
-
-  # How get the current profile of gnome-terminal?
-  local TERM_PROFILE=$(dconf dump / | grep -w org/gnome/terminal/legacy/profiles | awk 'NR>1{print $1}' RS='[' FS=']')
-  local DCONF_DIR="/$TERM_PROFILE"
-
-  # Extract the contents of terminal progile.
-  dconf dump $DCONF_DIR/ > ~/dconf_dump.bak
-
-  echo "Modify the gnome-terminal profile."
-
-  # Usage:
-  #   dconf write KEY VALUE
-  #
-  # Write a new value to a key
-  #
-  # Arguments:
-  #   KEY         A key path (starting, but not ending with '/')
-  #   VALUE       The value to write (in GVariant format)
-  # The value needs additional quoting i.e. to assign GVariant string value 'foo' you need to write the value argument as "'foo'"
-
-  echo "Modify the gnome-terminal profile."
-  dconf write $DCONF_DIR/use-theme-colors false
-  dconf write $DCONF_DIR/background-color "'rgb(255,255,221)'"
-  dconf write $DCONF_DIR/foreground-color "'rgb(0,0,0)'"
-  dconf write $DCONF_DIR/use-system-font false
-  dconf write $DCONF_DIR/font "'Terminus Bold 14'"
-  dconf write $DCONF_DIR/theme-variant "'light'"
-  dconf write $DCONF_DIR/menu-accelerator-enabled false
-  dconf write $DCONF_DIR/login-shell true
-
-  local SCHEMA='org.gnome.Terminal.Legacy.Settings'
-  gsettings set $SCHEMA theme-variant 'light'
-  gsettings set $SCHEMA menu-accelerator-enabled false
-
-  echo "The profile was modified."
-}
 
 function set_user_preferences () {
     # Define how some useful tools will work during software testing and Linux administraion.
@@ -278,6 +233,55 @@ function set_kernel_params () {
     echo 'Takes effect after reboot.'
 }
 
+function define_repo_rhel8 () {
+  # Define reopository for RHEL 8.0 BaseOS and AppStream
+  # 3 variants - released, rel-eng, nightly
+  local REPO_TYPE=${1:?"Error: repo type is missing. Possible values: released, rel-eng, nightly."}
+  local DISTRO_NAME=${2:?"Error: ditro name is missing. Examples: 8.0.0, RHEL-8.0-Snapshot-1.0, RHEL-8.1.0-20190606.n.0"}
+  
+  if [ "$REPO_TYPE" == "released" ]; then
+    # Examples
+    #     http://download-ipv4.eng.brq.redhat.com/released/RHEL-8/8.0-Beta/BaseOS/x86_64/os/
+    #     http://download-ipv4.eng.brq.redhat.com/released/RHEL-8/8.0.0/BaseOS/x86_64/os/
+    #     http://download-ipv4.eng.brq.redhat.com/released/RHEL-8/8.1.0-InternalSnapshot-2.1/BaseOS/x86_64/os/
+    # They work with names, not with distribution numbers.
+    SERVER='download-ipv4.eng.brq.redhat.com'
+    URL1="http://$SERVER/released/RHEL-8/$DISTRO_NAME/BaseOS/x86_64/os/"
+    
+    # Define AppStream repo
+    # Examples
+    #     http://download-ipv4.eng.brq.redhat.com/released/RHEL-8/8.0-Beta/AppStream/x86_64/os/
+    URL2="http://$SERVER/released/RHEL-8/$DISTRO_NAME/AppStream/x86_64/os/"
+  elif [ "$REPO_TYPE" == "rel-eng" ]; then
+    # Examples
+    #     http://download-ipv4.eng.brq.redhat.com/rel-eng/RHEL-8.0-Alpha-1.0/compose/BaseOS/x86_64/os/
+    #     http://download-ipv4.eng.brq.redhat.com/rel-eng/RHEL-8.0-Beta-1.7/compose/BaseOS/x86_64/os/
+    #     http://download-ipv4.eng.brq.redhat.com/rel-eng/RHEL-8.0-Snapshot-1.0/compose/BaseOS/x86_64/os/
+    SERVER='download-ipv4.eng.brq.redhat.com'
+    URL1="http://$SERVER/rel-eng/$DISTRO_NAME/compose/BaseOS/x86_64/os/"
+    # Define AppStream repo
+    # Example
+    #     http://download-ipv4.eng.brq.redhat.com/rel-eng/RHEL-8.0-Beta-1.7/compose/AppStream/x86_64/os/
+    URL2="http://$SERVER/rel-eng/$DISTRO_NAME/compose/AppStream/x86_64/os/"
+  elif [ "$REPO_TYPE" == "nightly" ]; then
+    # Examples
+    #     http://download-ipv4.eng.brq.redhat.com/nightly/RHEL-8.0.0-20190605.n.0/compose/BaseOS/x86_64/os/
+    #     http://download-ipv4.eng.brq.redhat.com/nightly/RHEL-8.1.0-20190606.n.0/compose/BaseOS/x86_64/os/
+    SERVER='download-ipv4.eng.brq.redhat.com'
+    URL1="http://$SERVER/nightly/$DISTRO_NAME/compose/BaseOS/x86_64/os/"
+    # Define AppStream repo
+    # Example
+    #     http://download-ipv4.eng.brq.redhat.com/nightly/RHEL-8.1.0-20190606.n.0/compose/AppStream/x86_64/os/
+    URL2="http://$SERVER/nightly/$DISTRO_NAME/compose/AppStream/x86_64/os/"
+  else
+    echo "Unsupported distribution \"$DISTRO_NAME\"." >&2
+    return 1
+  fi
+  
+  echo $URL1
+  echo $URL2
+}
+
 # Is the script is run as root?
 if [ $EUID -eq 0 ]; then
     # Generate a SSH key and copy it to my notebook
@@ -387,4 +391,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 6/3/2019
+# Last update: 6/6/2019
