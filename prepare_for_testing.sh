@@ -90,7 +90,6 @@ function set_gnome_terminal_rhel8 () {
   echo "The profile was modified."
 }
 
-
 function set_user_preferences () {
     # Define how some useful tools will work during software testing and Linux administraion.
     # VIM editor: Remove smart indentation which allows you to
@@ -278,8 +277,19 @@ function define_repo_rhel8 () {
     return 1
   fi
   
-  echo $URL1
-  echo $URL2
+  cat > /etc/yum.repos.d/$DISTRO_NAME.repo << EOF
+[${DISTRO_NAME}-baseos]
+name=${DISTRO_NAME} \$basearch BaseOS
+baseurl=$URL1
+enabled=1
+gpgcheck=0
+
+[${DISTRO_NAME}-appstream]
+name=${DISTRO_NAME} \$basearch AppStream
+baseurl=$URL2
+enabled=1
+gpgcheck=0
+EOF
 }
 
 # Is the script is run as root?
@@ -318,6 +328,11 @@ if [ $EUID -eq 0 ]; then
     source ~/bin/get-CA-cert.sh
     echo "Security certificates were imported."
     sleep 2
+    
+    echo "Define repository latest-RHEL-8.1"
+    define_repo_rhel8 nightly latest-RHEL-8.1
+    echo Done
+    sleep 2
     echo
     install_tools
     sleep 2
@@ -343,7 +358,7 @@ if [ $EUID -eq 0 ]; then
 fi  # when logged as root
 
 # Is the sript run as normal user, for example "test"?
-if [ $EUID -eq 1000 ]; then
+if [ $EUID -ge 1000 ]; then
     # Generate a SSH key and copy it to my notebook
     # in order to copy files without asking for password,
     # only if it is not already generated.
