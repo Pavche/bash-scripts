@@ -172,7 +172,10 @@ EOF
   [ ! "$COMPONENT" == "ModemManager" ] && \
   [ ! "$COMPONENT" == "NetworkManager-ci" ] && \
   [ ! "$COMPONENT" == "gnome-initial-setup" ]; then
-    cat << EOF >> $B_PROFILE
+    cat >> $B_PROFILE << EOF
+# Set large console font for the terminal outside of GUI.
+setfont /lib/kbd/consolefonts/ter-u24b.psf.gz
+
 # Start testing of Linux GUI.
 echo
 echo "Enable automatic start of dogtail in 5 sec..."
