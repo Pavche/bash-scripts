@@ -8,10 +8,6 @@
 # The script should be run on the TESTING MACHINE as user "test".
 # 1st command line parameter should be an existing software package in Linux.
 
-
-# TODO: define repository
-# TODO: make the chars bigger in terminal mode. Example: use terminus fonts + command "setfont /lib/kbd/consolefonts/"
-
 # Validation of command-line arguments
 COMPONENT=${1:?"Error. Component's name is missing."}
 
