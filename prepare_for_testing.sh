@@ -8,7 +8,9 @@
 # The script should be run on the TESTING MACHINE as user "test".
 # 1st command line parameter should be an existing software package in Linux.
 
+
 # TODO: define repository
+# TODO: make the chars bigger in terminal mode. Example: use terminus fonts + command "setfont /lib/kbd/consolefonts/"
 
 # Validation of command-line arguments
 COMPONENT=${1:?"Error. Component's name is missing."}
@@ -64,12 +66,17 @@ function set_gnome_terminal_rhel8 () {
   #  > org.gnome.Terminal.Legacy.Settings theme-variant 'light'
 
   # What is tne name of Terminal profile?
+  # Inial state is:
+  # [org/gnome/terminal/legacy]
+  # 
+  # After 1st configuraton, the profile looks like:
   # [org/gnome/terminal/legacy/profiles:/:b1dcc9dd-5262-4d8d-a863-c897e6d979b9]
 
   # How to find GNOME terminal profiles? How to match them?
-  local PROFILE=$(dconf dump / | grep -w gnome | grep -w terminal | grep -w profiles -m1 | awk 'NR>1{print $1}' RS='[' FS=']')
-  local DCONF_DIR="/$PROFILE"
-
+  DEFAULT_PROFILE_ID=$(gsettings get org.gnome.Terminal.ProfilesList default | awk 'NR>1{print $1}' RS=\' FS=\')
+  PROFILE=$(dconf dump / | grep -w gnome | grep -w terminal | grep -w "$DEFAULT_PROFILE_ID" | awk 'NR>1{print $1}' RS='[' FS=']')
+  DCONF_DIR="/$PROFILE"
+  
   # Extract the contents of terminal progile.
   dconf dump $DCONF_DIR/ > ~/dconf_dump.bak
 
@@ -83,7 +90,7 @@ function set_gnome_terminal_rhel8 () {
   dconf write $DCONF_DIR/menu-accelerator-enabled false
   dconf write $DCONF_DIR/login-shell true
 
-  local SCHEMA='org.gnome.Terminal.Legacy.Settings'
+  SCHEMA='org.gnome.Terminal.Legacy.Settings'
   gsettings set $SCHEMA theme-variant 'light'
   gsettings set $SCHEMA menu-accelerator-enabled false
 
@@ -94,17 +101,30 @@ function set_user_preferences () {
     # Define how some useful tools will work during software testing and Linux administraion.
     # VIM editor: Remove smart indentation which allows you to
     # easily copy & paste source code. Overwrite existing config.
-    (
-    cat << EOF
+    cat >  ~/.vimrc << EOF
 set nosmartindent
 EOF
-    ) >  ~/.vimrc
     
     # Set up light color for background before testing.
     gsettings set org.gnome.desktop.background picture-uri 'file:////usr/share/gnome-control-center/pixmaps/noise-texture-light.png'
     gsettings set org.gnome.desktop.background primary-color '#fad166'
     gsettings set org.gnome.desktop.background picture-options 'wallpaper'
     gsettings set org.gnome.desktop.background secondary-color '#fad166'
+}
+
+function install_BIG_fonts () {
+  # Install console font for the terminal when not using GUI.
+  # Example: Terminus Fonts
+  # Obtain them from EPEL7 repository.
+  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
+  && yum install -y terminus* \
+  && setfont /lib/kbd/console; RC=$?
+  if [ $RC -eq 0 ]; then
+    echo "OK. Installed Terminus fonts."
+  else
+    echo "Error: failed to install Terminus fonts." >&2
+    return 1
+  fi
 }
 
 function set_debug_log () {
@@ -290,6 +310,26 @@ baseurl=$URL2
 enabled=1
 gpgcheck=0
 EOF
+
+  # Final check.
+  if [ -f "/etc/yum.repos.d/$DISTRO_NAME.repo" ]; then
+    echo "Repo was defined: /etc/yum.repos.d/$DISTRO_NAME.repo"
+  else
+    echo "Failed to define repo /etc/yum.repos.d/$DISTRO_NAME.repo" >&2
+    return 1
+  fi
+
+  yum makecache
+  if ! yum repolist | grep "$DISTRO_NAME" | grep -q baseos; then
+    echo "Error: failed to define repo: ${DISTRO_NAME}-baseos" >&2
+    return 1
+  fi
+  if ! yum repolist | grep "$DISTRO_NAME" | grep -q appstream; then
+    echo "Error: failed to define repo: ${DISTRO_NAME}-appstream" >&2
+    return 1
+  fi
+  
+  echo "OK. Repository was defined successfully."
 }
 
 # Is the script is run as root?
@@ -320,18 +360,22 @@ if [ $EUID -eq 0 ]; then
         chown -R test:testers "$TEST_DIR"
     else
         echo "The directory $TEST_DIR does not exist."
-        exit 4
+        echo "It will be created now."
+        mkdir -p "$TEST_DIR"
     fi
     
     echo
     # In order to use Brew server you needed CA certificates.
-    source ~/bin/get-CA-cert.sh
-    echo "Security certificates were imported."
+    if source ~/bin/get-CA-cert.sh; then
+        echo "OK. Security certificates were imported."
+    else
+        echo "Error: failed to import security certificates." >&2
+        exit 1
+    fi
     sleep 2
     
     echo "Define repository latest-RHEL-8.1"
-    define_repo_rhel8 nightly latest-RHEL-8.1
-    echo Done
+    define_repo_rhel8 rel-eng RHEL-8.1.0-InternalSnapshot-2.1
     sleep 2
     echo
     install_tools
@@ -350,12 +394,14 @@ if [ $EUID -eq 0 ]; then
 
     echo
     set_user_preferences
+    install_BIG_fonts
     extend_bash_profile
     echo "bash profile was extended with new variables."
     extend_bashrc
     echo "bash rc was extended with new aliases and functions."
     set_kernel_params
 fi  # when logged as root
+
 
 # Is the sript run as normal user, for example "test"?
 if [ $EUID -ge 1000 ]; then
@@ -380,11 +426,11 @@ if [ $EUID -ge 1000 ]; then
     # Log file is needed only for the user "test" under which automated test are run.
     set_debug_log "$HOME/$COMPONENT/debug.log"
 
-    # Modify GNOME settings outside of GUI.
+    # Modify GNOME settings inside of GUI. When logged to a GNOME session.
     # Enable accessibility technology A11Y in GNOME3.
-    dbus-launch gsettings set org.gnome.desktop.interface toolkit-accessibility true
+    gsettings set org.gnome.desktop.interface toolkit-accessibility true
     # Disable power saving
-    dbus-launch gsettings set org.gnome.desktop.session idle-delay 0
+    gsettings set org.gnome.desktop.session idle-delay 0
     
     download_project $COMPONENT https://gitlab.cee.redhat.com/desktopqe/$COMPONENT.git
     
