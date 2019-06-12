@@ -108,21 +108,6 @@ EOF
     gsettings set org.gnome.desktop.background secondary-color '#fad166'
 }
 
-function install_BIG_fonts () {
-  # Install console font for the terminal when not using GUI.
-  # Example: Terminus Fonts
-  # Obtain them from EPEL7 repository.
-  yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
-  && yum install -y terminus* \
-  && setfont /lib/kbd/console; RC=$?
-  if [ $RC -eq 0 ]; then
-    echo "OK. Installed Terminus fonts."
-  else
-    echo "Error: failed to install Terminus fonts." >&2
-    return 1
-  fi
-}
-
 function set_debug_log () {
   # Create an empty debug log for given GUI component under test.
   local DEBUG_LOG=${1:?"Error, please provide full path to debug log."}
@@ -221,6 +206,7 @@ function install_tools() {
 function download_project() {
     local PROJECT=${1:?"Error. Provide project name."}
     local URL=${2:?"Error. Provide URL of a Git repository."}
+
     # Clone a project from Git repo into the current directory.
     if ! rpm --quiet -q git; then
         echo 'Cannot clone any Git repo. Install prerequisite "git".' >&2
@@ -275,11 +261,14 @@ function define_repo_rhel8 () {
     #     http://download-ipv4.eng.brq.redhat.com/rel-eng/RHEL-8.0-Alpha-1.0/compose/BaseOS/x86_64/os/
     #     http://download-ipv4.eng.brq.redhat.com/rel-eng/RHEL-8.0-Beta-1.7/compose/BaseOS/x86_64/os/
     #     http://download-ipv4.eng.brq.redhat.com/rel-eng/RHEL-8.0-Snapshot-1.0/compose/BaseOS/x86_64/os/
+    #     http://download.eng.rdu2.redhat.com/rel-eng/latest-RHEL-8.1/compose/BaseOS/x86_64/os/
     SERVER='download-ipv4.eng.brq.redhat.com'
     URL1="http://$SERVER/rel-eng/$DISTRO_NAME/compose/BaseOS/x86_64/os/"
     # Define AppStream repo
     # Example
     #     http://download-ipv4.eng.brq.redhat.com/rel-eng/RHEL-8.0-Beta-1.7/compose/AppStream/x86_64/os/
+    #     http://download.eng.rdu2.redhat.com/rel-eng/latest-RHEL-8.1/compose/AppStream/x86_64/os/
+
     URL2="http://$SERVER/rel-eng/$DISTRO_NAME/compose/AppStream/x86_64/os/"
   elif [ "$REPO_TYPE" == "nightly" ]; then
     # Examples
@@ -374,7 +363,7 @@ if [ $EUID -eq 0 ]; then
     sleep 2
     
     echo "Define repository latest-RHEL-8.1"
-    define_repo_rhel8 rel-eng RHEL-8.1.0-InternalSnapshot-2.1
+    define_repo_rhel8 rel-eng latest-RHEL-8.1
     sleep 2
     echo
     install_tools
@@ -391,6 +380,8 @@ if [ $EUID -eq 0 ]; then
       cp -fp /mnt/tests/desktop/rhel8/install/10-dummylibvnc.conf /etc/X11/xorg.conf.d
     fi
 
+    # Grant user test permission to read/write.
+    sudo chown -R test:test "$TEST_DIR"
     echo
     set_user_preferences
     install_BIG_fonts
@@ -451,4 +442,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 6/6/2019
+# Last update: 6/12/2019
