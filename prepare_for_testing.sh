@@ -185,6 +185,9 @@ alias watchcona='watch -d nmcli connection show --active'
 
 # Last video record
 alias last-video='ls -Art ~/Videos/*.webm | tail -n 1'
+
+# See network profiles
+alias lsnetcfg='ls -1 /etc/sysconfig/network-scripts/*'
 EOF
 }
 
@@ -442,4 +445,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 6/12/2019
+# Last update: 6/14/2019
