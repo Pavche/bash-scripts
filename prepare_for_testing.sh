@@ -148,9 +148,13 @@ export TEST_DIR="$TEST_DIR/\$COMPONENT"
 export DEBUG_LOG=\$HOME/"\$COMPONENT"_debug.log
 
 export TERM=xterm
- 
-cd "\$TEST_DIR"
 EOF
+
+if [ "$COMPONENT" == "control-center" ]; then
+  echo "cd \$TEST_DIR/control-center-networking" >> $B_PROFILE
+else
+  echo "cd \$TEST_DIR" >> $B_PROFILE
+fi
 
   # Needed for root user only.
   if [ $EUID -eq 0 ] && \
@@ -158,9 +162,6 @@ EOF
   [ ! "$COMPONENT" == "NetworkManager-ci" ] && \
   [ ! "$COMPONENT" == "gnome-initial-setup" ]; then
     cat >> $B_PROFILE << EOF
-# Set large console font for the terminal outside of GUI.
-setfont /lib/kbd/consolefonts/ter-u24b.psf.gz
-
 # Start testing of Linux GUI.
 echo
 echo "Enable automatic start of dogtail in 5 sec..."
