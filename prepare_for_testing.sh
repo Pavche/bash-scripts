@@ -217,19 +217,22 @@ function download_project() {
     fi
 
     pushd "$TEST_DIR"  # /mnt/tests
-    git clone "$URL"; RC=$?
-    [ $RC -eq 0 ] || return $RC
-    
+    git clone "$URL" || return $?
+
+    # Update project's submodules.
     if [ $PROJECT == $COMPONENT ]; then
         pushd "$COMPONENT"
-        git submodule update --init --recursive; RC=$?
-        if [ $RC -ne 0 ]; then
-            echo 'Failed to initialize submodules.' >&2
-            popd  # $COMPONENT
-            popd  # /mnt/tests
-            return $RC
+        git submodule update --init --recursive || return $?
+
+        if [ "$COMPONENT" == "control-center" ]; then
+          pushd control-center-networking/common_steps
+          git pull origin rhel-8-py3
+          popd
+
+          pushd control-center-networking/NetworkManager-ci
+          git pull origin master || return $?
+          popd
         fi
-        popd
     fi
     popd  # /mnt/tests
 }
@@ -387,7 +390,6 @@ if [ $EUID -eq 0 ]; then
     sudo chown -R test:test "$TEST_DIR"
     echo
     set_user_preferences
-    install_BIG_fonts
     extend_bash_profile
     echo "bash profile was extended with new variables."
     extend_bashrc
@@ -425,7 +427,14 @@ if [ $EUID -ge 1000 ]; then
     # Disable power saving
     gsettings set org.gnome.desktop.session idle-delay 0
     
-    download_project $COMPONENT https://gitlab.cee.redhat.com/desktopqe/$COMPONENT.git
+    download_project $COMPONENT https://gitlab.cee.redhat.com/desktopqe/$COMPONENT.git; RC=$?
+    if [ $RC -eq 0 ]; then
+      echo "OK. Git project \"$COMPONENT\" was cloned successfully."
+    else
+      echo "Error: failed to clone git project \"$COMPONENT\"." >&2
+      # Do not stop here. Continue with initial preparation.
+      sleep 3
+    fi
     
     echo
     set_user_preferences
