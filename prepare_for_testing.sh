@@ -129,32 +129,27 @@ function extend_bash_profile () {
   # the location on my notebook where is the source code for automated tests
   # the location of automated tests on the testing machine
   # Do not insert leading spaces in the code segment below
-  cat << EOF >> $B_PROFILE
+  cat >> $B_PROFILE << EOF 
+export TERM=xterm
+
 # Component name in Linux for testing
 export COMPONENT=$COMPONENT
 
 export NOTEBOOK='pgeorgie@dolphin.usersys.redhat.com'
 
-# Locations for sending logs, screenshots, and other files
-export RAMP="\$NOTEBOOK:Downloads"
-
 # Location of the source code of automated tests
 export SRC_CODE="\$NOTEBOOK:Work/\$COMPONENT"
 
-# Location of automated tests
-export TEST_DIR="$TEST_DIR/\$COMPONENT"
+# Locations for sending logs, screenshots, and other files
+export RAMP="\$NOTEBOOK:Downloads"
 
 # Debug logs
 export DEBUG_LOG=\$HOME/"\$COMPONENT"_debug.log
 
-export TERM=xterm
+# Location of automated tests
+export TEST_DIR="$TEST_DIR/\$COMPONENT"
+cd \$TEST_DIR
 EOF
-
-if [ "$COMPONENT" == "control-center" ]; then
-  echo "cd \$TEST_DIR/control-center-networking" >> $B_PROFILE
-else
-  echo "cd \$TEST_DIR" >> $B_PROFILE
-fi
 
   # Needed for root user only.
   if [ $EUID -eq 0 ] && \
@@ -189,6 +184,27 @@ alias last-video='ls -Art ~/Videos/*.webm | tail -n 1'
 
 # See network profiles
 alias lsnetcfg='ls -1 /etc/sysconfig/network-scripts/*'
+
+# Manage broadband modems on a USB port or a USB hub.
+function usb_hub_disable_all() {
+  for i in {0..7}; do
+    ./acroname.py --port $i --disable
+  done
+}
+
+function usb_hub_enable() {
+  usb_hub_disable_all
+  sleep 2
+  ./acroname.py --port $1 --enable
+}
+
+function lsusbv() {
+  # Example
+  # lsusb -v -d 1199:a001 | head -n20
+  local USB_ID=${1:?"Error: USB ID is missing."}
+  lsusb -v -d $USB_ID | head -n 20
+  return $?
+}
 EOF
 }
 
@@ -369,9 +385,11 @@ if [ $EUID -eq 0 ]; then
     fi
     sleep 2
     
-    echo "Define repository latest-RHEL-8.1"
-    define_repo_rhel8 rel-eng latest-RHEL-8.1
-    sleep 2
+    if uname -r | grep -w -q el8; then
+      echo "Define repository latest-RHEL-8.1"
+      define_repo_rhel8 rel-eng latest-RHEL-8.1
+      sleep 2
+    fi  
     echo
     install_tools
     sleep 2
@@ -455,4 +473,5 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 6/14/2019
+# Last update: 6/23/2019
+
