@@ -32,6 +32,8 @@
 # 27. Software for creating e-Books from AsciiDoc format
 # 28. File archivers, file compression tools.
 # 29. Creating GUI Applications Under Linux
+# 30. Integrated Development Environment for Python - PyCharm
+
 
 
 if [ $EUID -ne 0 ]; then
@@ -156,14 +158,7 @@ terminator
 # 2nd has GUI managed via menus and key shortcuts
 
 # 19. Screen sharing and remote control
-# By using VNC - 3 variants + 1 VNC client
-yum install -y \
-tigervnc-server \
-vino \
-x11vnc \
-vnc
-# By using TeamViewer
-yum install -y https://download.teamviewer.com/download/linux/teamviewer.x86_64.rpm
+yum install -y tigervnc tigervnc-server
 
 # 20. Password manager
 yum install -y keepassx2
@@ -259,5 +254,21 @@ else
 fi
 
 
+# 30. For Python developers
+URL="https://download.jetbrains.com/python/pycharm-community-2019.1.3.tar.gz"
+ARCH_NAME=$(basename $URL) 
+
+pushd ~/Downloads/
+wget -O $ARCH_NAME $URL \
+&& tar xzvf $ARCH_NAME; RC=$?
+popd
+if [ $RC -eq 0 ]; then
+  echo "PyCharm was downloaded in ~/Downloads"
+else
+  echo "Error: failed to download PyCharm." >&2
+  echo "Download via web browser."
+  firefox "https://www.jetbrains.com/pycharm/download/#section=linux"
+fi
+
 # Author: Pavlin Georgiev
-# Last update: 5/21/2018
+# Last update: 6/17/2019
