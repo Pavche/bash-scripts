@@ -49,6 +49,7 @@ function copy_test_scripts() {
     ssh -o StrictHostKeyChecking=no test@$TEST_PC "mkdir bin" < /dev/null
     scp ~/Work/bash-prep/*testing*.sh \
     ~/bin/*testing*.sh \
+    ~/bin/behave-loop.sh \
     test@$TEST_PC:bin
 }
 

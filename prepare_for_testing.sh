@@ -135,15 +135,13 @@ export TERM=xterm
 # Component name in Linux for testing
 export COMPONENT=$COMPONENT
 
-export NOTEBOOK='pgeorgie@dolphin.usersys.redhat.com'
-
 # Location of the source code of automated tests
+export NOTEBOOK='pgeorgie@dolphin.usersys.redhat.com'
 export SRC_CODE="\$NOTEBOOK:Work/\$COMPONENT"
 
 # Locations for sending logs, screenshots, and other files
 export RAMP="\$NOTEBOOK:Downloads"
 
-# Debug logs
 export DEBUG_LOG=\$HOME/"\$COMPONENT"_debug.log
 
 # Location of automated tests
@@ -184,6 +182,10 @@ alias last-video='ls -Art ~/Videos/*.webm | tail -n 1'
 
 # See network profiles
 alias lsnetcfg='ls -1 /etc/sysconfig/network-scripts/*'
+
+# Show 1st graphics card.
+alias show_vga='lspci -nn -s \$(lspci | grep -m1 VGA | cut -f1 -d" ") | cut -d: -f3-'
+alias show_graphics='lspci -nn -s \$(lspci | grep -m1 VGA | cut -f1 -d" ") | cut -d: -f3-'
 
 # Manage broadband modems on a USB port or a USB hub.
 function usb_hub_disable_all() {
@@ -473,5 +475,5 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 6/23/2019
+# Last update: 6/24/2019
 
