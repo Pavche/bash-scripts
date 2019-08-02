@@ -93,6 +93,17 @@ function set_gnome_terminal_rhel8 () {
   echo "The profile was modified."
 }
 
+function install_debugging_tools () {
+  # Install ipdb and IPython.
+  # For Python 2.7
+  pip2 install --upgrade pip
+  pip2 install ipdb==0.8 'ipython<6.0'
+
+  # Python 3.6 and above
+  pip3 install --upgrade pip
+  pip3 install ipdb ipython
+}
+
 function set_user_preferences () {
     # Define how some useful tools will work during software testing and Linux administraion.
     # VIM editor: Remove smart indentation which allows you to
@@ -395,6 +406,8 @@ if [ $EUID -eq 0 ]; then
     echo
     install_tools
     sleep 2
+    install_debugging_tools
+    sleep 2
     
     # Prepare specific conditions for remote connection via VNC under RHEL 8.0
     # on a physical host.
@@ -475,5 +488,5 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 6/24/2019
+# Last update: 8/2/2019
 
