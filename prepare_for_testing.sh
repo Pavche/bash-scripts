@@ -180,7 +180,10 @@ EOF
 function extend_bashrc () {
     # Add new commands for tacking the behavor of netork interfaces, connections, and routes.
     # Do not leave leading spaces in the code segment below
-    cat << EOF >> $B_RC
+    cat >> $B_RC << EOF
+
+# Get the current position of the system journal's CURSOR.
+alias getjournalc='journalctl -e --show-cursor | tail -n1 | cut -d: -f2-'
 
 # Track the state of network links, connections, and IPv4/IPv6 addresses
 alias watchdev='watch -d nmcli dev status'
@@ -195,7 +198,7 @@ alias last-video='ls -Art ~/Videos/*.webm | tail -n 1'
 alias lsnetcfg='ls -1 /etc/sysconfig/network-scripts/*'
 
 # Show 1st graphics card.
-alias show_vga='lspci -nn -s \$(lspci | grep -m1 VGA | cut -f1 -d" ") | cut -d: -f3-'
+alias lsvga='lspci -nn -s \$(lspci | grep -m1 VGA | cut -f1 -d" ") | cut -d: -f3-'
 alias show_graphics='lspci -nn -s \$(lspci | grep -m1 VGA | cut -f1 -d" ") | cut -d: -f3-'
 
 # Manage broadband modems on a USB port or a USB hub.
@@ -265,12 +268,6 @@ function download_project() {
         fi
     fi
     popd  # /mnt/tests
-}
-
-function set_kernel_params () {
-    echo 'Disable consistent network device naming and BIOS names.'
-    grubby --update-kernel=ALL --args="biosdevname=0 net.ifnames=0"
-    echo 'Takes effect after reboot.'
 }
 
 function define_repo_rhel8 () {
@@ -428,7 +425,7 @@ if [ $EUID -eq 0 ]; then
     echo "bash profile was extended with new variables."
     extend_bashrc
     echo "bash rc was extended with new aliases and functions."
-    set_kernel_params
+
 fi  # when logged as root
 
 
@@ -488,5 +485,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 8/2/2019
-
+# Last update: 8/19/2019
