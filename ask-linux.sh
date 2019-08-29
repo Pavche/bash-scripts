@@ -112,7 +112,7 @@ function collect_hardware_info() {
 
     echo "Collecting hardware information..."
     echo -e "\n\nList PCI and PCI-e devices including vendor ID" >> "$DIAG_FILE"
-    lspci -v -nn >> "$DIAG_FILE" 2>&1
+    lspci -nn >> "$DIAG_FILE" 2>&1
     echo -e "\n\nList of USB devices" >> "$DIAG_FILE"
     lsusb >> "$DIAG_FILE" 2>&1
     echo "Collecting hardware information...Done"
@@ -291,5 +291,5 @@ send_logs "$DIAG_DIR" "$DESTINATION"
 
 # Author: Pavlin Georgiev
 # Created on: 9 Feb 2017
-# Last modification: 25 Jun 2018
+# Last modification: 29 2019
 # I love this script!

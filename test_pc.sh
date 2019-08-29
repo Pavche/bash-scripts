@@ -41,6 +41,7 @@ function copy_test_scripts() {
     ~/bin/*testing*.sh \
     ~/bin/ask-linux.sh \
     ~/bin/test-ModemManager*.sh \
+    ~/bin/test-osinfo.sh \
     ~/Work/bash-prep/get-CA*.sh \
     ~/Work/bash-prep/install-automation.sh \
     ~/Work/bash-prep/rotest.sh \
