@@ -168,11 +168,17 @@ EOF
     cat >> $B_PROFILE << EOF
 # Start testing of Linux GUI.
 echo
-echo "Enable automatic start of dogtail in 5 sec..."
+# echo "Enable automatic start of dogtail in 5 sec..."
+# echo "Press Ctrl+C to interrupt."
+# sleep 5
+# sudo -u test dogtail-run-headless-next bash
+# sudo -u test dogtail-run-headless-next x11vnc
+
+# Enable remote administraion
+echo "Enable automatic start of x11vnc in 5 sec..."
 echo "Press Ctrl+C to interrupt."
 sleep 5
-sudo -u test dogtail-run-headless-next bash
-# sudo -u test dogtail-run-headless-next x11vnc
+x11vnc
 EOF
   fi
 }
@@ -181,7 +187,6 @@ function extend_bashrc () {
     # Add new commands for tacking the behavor of netork interfaces, connections, and routes.
     # Do not leave leading spaces in the code segment below
     cat >> $B_RC << EOF
-
 # Get the current position of the system journal's CURSOR.
 alias getjournalc='journalctl -e --show-cursor | tail -n1 | cut -d: -f2-'
 
@@ -204,24 +209,25 @@ alias show_graphics='lspci -nn -s \$(lspci | grep -m1 VGA | cut -f1 -d" ") | cut
 # Manage broadband modems on a USB port or a USB hub.
 function usb_hub_disable_all() {
   for i in {0..7}; do
-    ./acroname.py --port $i --disable
+    ./acroname.py --port \$i --disable
   done
 }
 
 function usb_hub_enable() {
   usb_hub_disable_all
   sleep 2
-  ./acroname.py --port $1 --enable
+  ./acroname.py --port \$1 --enable
 }
 
 function lsusbv() {
   # Example
   # lsusb -v -d 1199:a001 | head -n20
-  local USB_ID=${1:?"Error: USB ID is missing."}
-  lsusb -v -d $USB_ID | head -n 20
-  return $?
+  local USB_ID=\${1:?"Error: USB ID is missing."}
+  lsusb -v -d \$USB_ID | head -n 20
+  return \$?
 }
 EOF
+
 }
 
 function install_tools() {
@@ -480,9 +486,15 @@ if [ $EUID -ge 1000 ]; then
     echo "bash profile was extended with new variables."
     extend_bashrc
     echo "bash rc was extended with new aliases and functions."
+    
+    # Start GUI
+    systemctl enable gdm
+    systemctl unmask gdm
+    systemctl set-default graphical.target
+    systemctl start gdm
 
 fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 8/19/2019
+# Last update: 9/5/2019
