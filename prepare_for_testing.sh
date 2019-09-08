@@ -378,9 +378,28 @@ if [ $EUID -eq 0 ]; then
     # Copy the SSH key of user test to provide passwordless file transfer.
     ssh-copy-id -o StrictHostKeyChecking=no pgeorgie@dolphin.usersys.redhat.com
 
+    # Set the root password to 'redhat' (for overcoming polkit easily).
+    echo "Setting root password to 'redhat'"
+    echo "redhat" | passwd root --stdin
+    
     groupadd --gid 10001 testers
     usermod -aG testers test
+    usermod -aG wheel test
 
+    # Allow passwordless sudo.
+    echo "enabling passwordless sudo"
+    if [ -e /etc/sudoers.bak ]; then
+        mv -f /etc/sudoers.bak /etc/sudoers
+    fi
+    cp -a /etc/sudoers /etc/sudoers.bak
+    grep -v requiretty /etc/sudoers.bak > /etc/sudoers
+    echo 'Defaults:test !env_reset' >> /etc/sudoers
+    echo 'test ALL=(ALL)   NOPASSWD: ALL' >> /etc/sudoers
+    
+
+    # Set ulimit to unlimited for test user.
+    echo "ulimit -c unlimited" >> /home/test/.bashrc
+    
     # Go to the directory where the tests are located.
     if [[ -d "$TEST_DIR" ]]; then
         # Assign file ownership to user test
@@ -497,4 +516,4 @@ fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 9/5/2019
+# Last update: 9/8/2019
