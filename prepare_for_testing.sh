@@ -167,12 +167,11 @@ EOF
   [ ! "$COMPONENT" == "gnome-initial-setup" ]; then
     cat >> $B_PROFILE << EOF
 # Start testing of Linux GUI.
-echo
+# echo
 # echo "Enable automatic start of dogtail in 5 sec..."
 # echo "Press Ctrl+C to interrupt."
 # sleep 5
 # sudo -u test dogtail-run-headless-next bash
-# sudo -u test dogtail-run-headless-next x11vnc
 
 # Enable remote administraion
 echo "Enable automatic start of x11vnc in 5 sec..."
@@ -450,7 +449,12 @@ if [ $EUID -eq 0 ]; then
     echo "bash profile was extended with new variables."
     extend_bashrc
     echo "bash rc was extended with new aliases and functions."
-
+    
+    # Start GUI
+    systemctl enable gdm
+    systemctl unmask gdm
+    systemctl set-default graphical.target
+    systemctl start gdm
 fi  # when logged as root
 
 
@@ -505,15 +509,9 @@ if [ $EUID -ge 1000 ]; then
     echo "bash profile was extended with new variables."
     extend_bashrc
     echo "bash rc was extended with new aliases and functions."
-    
-    # Start GUI
-    systemctl enable gdm
-    systemctl unmask gdm
-    systemctl set-default graphical.target
-    systemctl start gdm
 
 fi  # when logged as normal user
 
 # Author: Pavlin Georgiev
 # Created on: 7/13/2016
-# Last update: 9/8/2019
+# Last update: 9/13/2019

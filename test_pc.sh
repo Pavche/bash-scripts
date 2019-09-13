@@ -51,6 +51,7 @@ function copy_test_scripts() {
     scp ~/Work/bash-prep/*testing*.sh \
     ~/bin/*testing*.sh \
     ~/bin/behave-loop.sh \
+    ~/bin/gnome-autostart.el7.sh \
     test@$TEST_PC:bin
 }
 
@@ -133,4 +134,4 @@ if [ ! -d $HOME/Pictures/Screenshots ]; then
 fi
 
 # Author: Pavlin Georgiev
-# Last update: 5/19/2019
+# Last update: 9/13/2019
