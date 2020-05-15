@@ -92,7 +92,14 @@ sleep 2
 firefox "https://get.adobe.com/flashplayer"
 
 echo "KeePassX2"
-dnf install -y keepassx
+dnf install -y keepass
+echo "Set up e-mail client"
+echo "Set up personal certificate in internet browser"
+echo "Set up personal certificate in e-mail client"
+echo "Set up signature of e-mails"
+echo "Configure SSH keys"
+echo "Set up konsole to use: font DejaVu Sans Mono 14 pt"
+echo "Configure password manager for password autocomplete"
 isOK || exit 1
 
 echo "Install multimedia player: VLC"
@@ -186,17 +193,3 @@ function clone_EGI_repo() {
 
 configure_ansible
 clone_EGI_repo
-
-echo "Set up konsole to use: font DejaVu Sans Mono 14 pt"
-echo "Configure password manager for password autocomplete"
-echo "Set up personal certificate in internet browser"
-echo "Set up e-mail client"
-echo "Set up personal certificate in e-mail client"
-echo "Set up signature of e-mails"
-echo "Set up mailing filters"
-echo "Configure SSH keys"
-
-
-# Works under Fedora 31
-# Author: Pavlin Georgiev
-# Last update: 4 May 2020
